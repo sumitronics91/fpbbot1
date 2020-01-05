@@ -1,0 +1,119 @@
+ 
+/* The code controls a bot with two 1000 rpm Dc brushed geared motor 
+ * Arduino Nano is connected to a L298 motor driver via ports 5,6,7,8,9,10 (9,10 are Enable pins)
+ * 2.4 Ghz Rc Receiver is connected to port 3,4 with ch2 controlling the forward movement of the bot and is connected to elevator channel
+ * ch3 controls the turn and is connected to yaw channel of the transnitter.
+ * A PFV system has been connected to the bot which sends livecamera feed to the video goggles. 
+ 
+ Part of the code is from a project by Nick Poole( SparkFun Electronics  CC-BY SA 3.0 )
+ */
+
+int ch1; // Here's where we'll keep our channel values
+int ch2; // Here's where we'll keep our channel values
+int ch3; // Here's where we'll keep our channel values
+int m; // Forward/Back speed
+int turn; // Turning Factor
+//#define sensor A0
+
+
+void setup() {
+
+pinMode(3, INPUT); // Set our input pins as such
+pinMode(4, INPUT);
+//pinMode(7, INPUT);
+pinMode(10, OUTPUT);
+pinMode(5, OUTPUT);
+pinMode(8, OUTPUT);
+pinMode(9, OUTPUT);
+pinMode(6, OUTPUT);
+pinMode(7, OUTPUT);
+pinMode(13,OUTPUT);
+
+Serial.begin(9600); // Pour a bowl of Serial
+
+}
+
+void loop() {
+
+  
+  //ch1 = pulseIn(5, HIGH, 25000); // Read the pulse width of each channel. Channel 1 is not used 
+  ch2 = pulseIn(4, HIGH, 25000); 
+  ch3 = pulseIn(3, HIGH, 25000);
+  
+m= map(ch2, 1000,2000, -500, 400); //center over zero
+m = constrain(m, -220, 220);
+
+if(m>0){backward();};
+if(m<0){forward(); m=abs(m);};
+
+turn = map(ch3,1000,2000,-500,500);
+turn = constrain(turn, -255, 255);
+//(m-turn)==abs(m-turn);
+
+if (turn<70 && turn>-70){analogWrite(10, m); analogWrite(9, m);};   // these values can be changed based on confort of the operator
+if(turn>=70 && turn<160 ){right();analogWrite(10, turn); analogWrite(9, turn);};
+if(turn>=160){right();analogWrite(10, 120); analogWrite(9, 180);};
+if(turn<-70 && turn>-160){turn=abs(turn); left();analogWrite(9, turn); analogWrite(10, turn);};
+if(turn<=-160){turn=abs(turn);left();analogWrite(9, 120); analogWrite(10, 180);};
+
+
+//Serial.print("Right Stick X:"); // Ch3 was x-axis 
+//Serial.println(m); // center at 0
+
+//Serial.print("Right Stick Y:"); // Ch2 was y-axis
+//Serial.println(turn); // center at 0
+
+//Serial.print("m-turn"); // Ch2 was y-axis
+//Serial.println(m-turn); // center at 0
+
+//Serial.println(); //make some room
+
+//delay(100);// I put this here just to make the terminal 
+           // window happier
+}
+
+void forward(){
+  digitalWrite(5, HIGH); // 5,6 are input pins for motor 1(right motor) and 9 is enable pin . 7,8 are input pins for motor 2 while pin 10 is enable pin 
+  digitalWrite(6, LOW);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, LOW);
+ // analogWrite(9, x);
+ // analogWrite(10, x);
+  
+}
+void left(){
+  digitalWrite(5, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, LOW);
+  //analogWrite(9, 100);
+ // analogWrite(10, 200);
+  
+}
+void right(){
+  digitalWrite(5, HIGH);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(8, HIGH);
+  //analogWrite(9, 200);
+ // analogWrite(10, 100);
+  
+}
+void backward(){
+  digitalWrite(5, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, LOW);
+  digitalWrite(8, HIGH);
+ // analogWrite(9, x);
+  //analogWrite(10, x);
+  
+}
+void brake(){
+  digitalWrite(5, LOW);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
+  analogWrite(9, 250);
+  analogWrite(10,250);
+  
+}
